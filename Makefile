@@ -337,21 +337,37 @@ endif
 .SILENT: lint-install
 lint-install:
 	@echo "➜ Installing pre-commit..."
+ifeq ($(OS),Windows_NT)
+	@where pre-commit >nul 2>&1 || (python -m pip install pre-commit 2>nul || py -m pip install pre-commit 2>nul || python3 -m pip install pre-commit 2>nul || echo "⚠ Warning: Could not install pre-commit. Please install Python and pip, then run: pip install pre-commit")
+else
 	@command -v pre-commit >/dev/null 2>&1 || pip install pre-commit || pip3 install pre-commit
+endif
 	@echo "✓ pre-commit installed!"
 
 .SILENT: lint-setup
 lint-setup: lint-install
 	@echo "➜ Installing pre-commit hooks..."
+ifeq ($(OS),Windows_NT)
+	@python -m pre_commit install || py -m pre_commit install || python3 -m pre_commit install || (echo "⚠ Error: Could not run pre-commit. Try: python -m pre_commit install" && exit 1)
+else
 	@pre-commit install
+endif
 	@echo "✓ Pre-commit hooks installed!"
 
 .SILENT: lint
 lint:
 	@echo "➜ Running all linters on all files..."
+ifeq ($(OS),Windows_NT)
+	@python -m pre_commit run --all-files || py -m pre_commit run --all-files || python3 -m pre_commit run --all-files || (echo "⚠ Error: Could not run pre-commit. Try: python -m pre_commit run --all-files" && exit 1)
+else
 	@pre-commit run --all-files
+endif
 
 .SILENT: lint-check
 lint-check:
 	@echo "➜ Checking staged files only..."
+ifeq ($(OS),Windows_NT)
+	@python -m pre_commit run || py -m pre_commit run || python3 -m pre_commit run || (echo "⚠ Error: Could not run pre-commit. Try: python -m pre_commit run" && exit 1)
+else
 	@pre-commit run
+endif
